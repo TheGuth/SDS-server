@@ -2,6 +2,7 @@ const bodyParser = require('body-parser');
 const express = require('express');
 const mongoose = require('mongoose');
 const morgan = require('morgan');
+import { User } from './models';
 
 const {DATABASE_URL, PORT} = require('./config');
 
@@ -12,7 +13,70 @@ app.use(bodyParser.json());
 
 mongoose.Promise = global.Promise;
 
+app.post('api/users', (req, res) => {
+  if (!req.body) {
+    return res.status(400).json({message: 'No request body'});
+  }
 
+  if (!('name' in req.body)) {
+    return res.status(422).json({message: 'Missing field: name'});
+  }
+
+  let {name, email, password} = req.body;
+
+  if (typeof name !== 'string') {
+    return res.status(422).json({message: 'Empty field type: name'});
+  }
+
+  name = name.trim();
+
+  if (name === '') {
+    return res.status(422).json({message: 'Empty field length: name'});
+  }
+
+  email = email.trim();
+
+  if (email === '') {
+    return res.status(422).json({message: 'Empty field length: email'})
+  }
+
+  if (!(password)) {
+    return res.status(422).json({message: 'Missing field: password'});
+  }
+
+  if (typeof password !== 'string') {
+    return res.status(422).json({message: 'Incorrect field type: password'});
+  }
+
+  password = password.trim();
+
+  if (password === '') {
+    return res.status(422).json({message: 'Incorrect field length: password'});
+  }
+
+  // check for existing user
+  return User
+    .find({email})
+    .count()
+    .exec()
+    .then(count => {
+      if (count > 0) {
+        return res.status(422).json({message: 'email already taken'});
+      }
+      return User
+        .create({
+          name: name,
+          password: password,
+          email: email,
+        })
+    })
+    .then(user => {
+      return res.status(201).json(user.apiRepr());
+    })
+    .catch(err => {
+      res.status(500).json({message: 'Internal server error'})
+    });
+})
 
 // closeServer needs access to a server object, but that only
 // gets created when `runServer` runs, so we declare `server` here
