@@ -2,7 +2,7 @@ const bodyParser = require('body-parser');
 const express = require('express');
 const mongoose = require('mongoose');
 const morgan = require('morgan');
-import { User } from './models';
+const User = require('./models');
 
 const {DATABASE_URL, PORT} = require('./config');
 
