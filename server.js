@@ -18,6 +18,7 @@ mongoose.Promise = global.Promise;
 
 const basicStrategy = new BasicStrategy(
   (email, password, callback) => {
+    console.log('hello');
     let user;
     User
       .findOne({email})
@@ -43,7 +44,22 @@ passport.use(basicStrategy);
 app.use(passport.initialize());
 
 
-
+app.post('/api/users/login', passport.authenticate('basic', {session: false}), (req, res) => {
+  console.log('hello');
+  userEmail = req.email.toLowerCase();
+  User
+    .findOne({ email: userEmail })
+    .then(user => {
+      if (!user) {
+        return res.status(404).json({message: 'Incorrect Email or Password'});
+      } else {
+        return res.status(200).json(user.apiRepr());
+      }
+    })
+    .catch(err => {
+      res.status(500).json({message: 'Internal server error'})
+    });
+})
 
 
 app.get('/api/users/:userEmail', passport.authenticate('basic', {session: false}), (req, res) => {
