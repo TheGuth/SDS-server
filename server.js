@@ -25,7 +25,7 @@ app.get('/api/users/:userEmail', (req, res) => {
       if (!user) {
         return res.status(404).json({message: 'Email not found in database'});
       } else {
-        return res.status(201).json(user.apiRepr());
+        return res.status(200).json(user.apiRepr());
       }
     })
     .catch(err => {
@@ -36,7 +36,7 @@ app.get('/api/users/:userEmail', (req, res) => {
 app.get('/api/users', (req, res) => {
   return User.find({})
   .then(users => {
-    return res.status(201).json(users);
+    return res.status(200).json(users);
   })
 })
 
@@ -45,15 +45,7 @@ app.post('/api/users', (req, res) => {
     return res.status(400).json({message: 'No request body'});
   }
 
-  if (!('name' in req.body)) {
-    return res.status(422).json({message: 'Missing field: name'});
-  }
-
-  if (!req.body) {
-    return res.status(400).json({message: 'No request body'});
-  }
-
-  if (!('name' in req.body)) {
+  if (!("name" in req.body)) {
     return res.status(422).json({message: 'Missing field: name'});
   }
 
@@ -108,6 +100,21 @@ app.post('/api/users', (req, res) => {
     .catch(err => {
       res.status(500).json({message: 'Internal server error'})
     });
+})
+
+app.delete('/api/users/:userEmail', (req, res) => {
+  User
+    .findOneAndRemove({email: req.params.userEmail}, (err, user) => {
+      if (err) {
+        throw err;
+      }
+      if (user) {
+        res.status(200).json({message: 'User found and deleted', user: user});
+      }
+      else {
+        res.status(500).json({message: 'No user found'});
+      }
+    })
 })
 
 // closeServer needs access to a server object, but that only
