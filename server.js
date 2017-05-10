@@ -2,25 +2,54 @@ const bodyParser = require('body-parser');
 const express = require('express');
 const mongoose = require('mongoose');
 const morgan = require('morgan');
+const {BasicStrategy} = require('passport-http');
+const passport = require('passport');
+const bcrypt = require('bcryptjs');
 
 const {DATABASE_URL, PORT} = require('./config');
+const User = require('./models');
 
 const app = express();
 
 app.use(morgan('common'));
 app.use(bodyParser.json());
 
-const User = require('./models');
-
 mongoose.Promise = global.Promise;
 
-app.get('/', (req, res) => {
-  console.log('hello');
-})
+const basicStrategy = new BasicStrategy(
+  (email, password, callback) => {
+    let user;
+    User
+      .findOne({email})
+      .exec()
+      .then(_user => {
+        user = _user;
+        if (!user) {
+          return callback(null, false, "Incorrect Email");
+        }
+        return user.validatePassword(password);
+      })
+      .then(isValid => {
+        if (!isValid) {
+          return callback(null, false, "Incorrect password");
+        }
+        else {
+          return callback(null, user);
+        }
+      });
+});
 
-app.get('/api/users/:userEmail', (req, res) => {
+passport.use(basicStrategy);
+app.use(passport.initialize());
+
+
+
+
+
+app.get('/api/users/:userEmail', passport.authenticate('basic', {session: false}), (req, res) => {
+  userEmail = req.params.userEmail.toLowerCase();
   User
-    .findOne({ email: req.params.userEmail })
+    .findOne({ email: userEmail })
     .then(user => {
       if (!user) {
         return res.status(404).json({message: 'Email not found in database'});
@@ -33,6 +62,7 @@ app.get('/api/users/:userEmail', (req, res) => {
     });
 })
 
+                  //TODO THIS IS ONLY FOR DEV USE; TAKE OUT FOR PRODUCTION
 app.get('/api/users', (req, res) => {
   return User.find({})
   .then(users => {
@@ -51,7 +81,7 @@ app.post('/api/users', (req, res) => {
 
   let {email, password, name} = req.body;
 
-  email = email.trim();
+  email = email.trim().toLowerCase();
   name = name.trim();
   password = password.trim();
 
@@ -87,10 +117,13 @@ app.post('/api/users', (req, res) => {
       if (count > 0) {
         return res.status(422).json({message: 'email already taken'});
       }
+      return User.hashPassword(password);
+    })
+    .then(hash => {
       return User
         .create({
           name: name,
-          password: password,
+          password: hash,
           email: email,
         })
     })
@@ -102,9 +135,10 @@ app.post('/api/users', (req, res) => {
     });
 })
 
-app.delete('/api/users/:userEmail', (req, res) => {
+app.delete('/api/users/:userEmail', passport.authenticate('basic', {session: false}), (req, res) => {
+  userEmail = req.params.userEmail.toLowerCase();
   User
-    .findOneAndRemove({email: req.params.userEmail}, (err, user) => {
+    .findOneAndRemove({email: userEmail}, (err, user) => {
       if (err) {
         throw err;
       }
