@@ -18,6 +18,21 @@ app.get('/', (req, res) => {
   console.log('hello');
 })
 
+app.get('/api/users/:userEmail', (req, res) => {
+  User
+    .findOne({ email: req.params.userEmail })
+    .then(user => {
+      if (!user) {
+        return res.status(404).json({message: 'Email not found in database'});
+      } else {
+        return res.status(201).json(user.apiRepr());
+      }
+    })
+    .catch(err => {
+      res.status(500).json({message: 'Internal server error'})
+    });
+})
+
 app.get('/api/users', (req, res) => {
   return User.find({})
   .then(users => {
@@ -43,6 +58,7 @@ app.post('/api/users', (req, res) => {
   }
 
   let {email, password, name} = req.body;
+
   email = email.trim();
   name = name.trim();
   password = password.trim();
@@ -71,7 +87,7 @@ app.post('/api/users', (req, res) => {
     return res.status(422).json({message: 'Incorrect field length: password'});
   }
 
-  // check for existing user
+  // check for existing user with same email before creating...
   return User
     .find({email})
     .count()
@@ -92,7 +108,6 @@ app.post('/api/users', (req, res) => {
     .catch(err => {
       res.status(500).json({message: 'Internal server error'})
     });
-
 })
 
 // closeServer needs access to a server object, but that only
