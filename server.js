@@ -15,7 +15,8 @@ const socketApp = express();
 // SOCKET IO TESTING //
 
 const socketServer = require('http').createServer(socketApp);
-const websocket = require('socket.io').listen(PORT);
+const websocket = require('socket.io').listen(3000);
+
 var mongojs = require('mongojs');
 
 var ObjectID = mongojs.ObjectID;
@@ -30,7 +31,6 @@ var users = {};
 var chatId = 1;
 
 websocket.on('connection', (socket) => {
-    console.log('hello')
     clients[socket.id] = socket;
     socket.on('userJoined', (userId) => onUserJoined(userId, socket));
     socket.on('message', (message) => onMessageReceived(message, socket));
