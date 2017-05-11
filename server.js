@@ -19,9 +19,9 @@ const io = require('socket.io').listen(3000);
 
 io.sockets.on('connection', function (socket) {
   console.log('client connected', socket.id);
-    setInterval(function() {
-      socket.emit('hi', 'hello from server');
-    }, 2000);
+    // setInterval(function() {
+    //   socket.emit('hi', 'hello from server');
+    // }, 2000);
 });
 
 // ////////////////////////////////////////////
