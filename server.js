@@ -12,10 +12,52 @@ const User = require('./models');
 const app = express();
 const socketApp = express();
 
+// closeServer needs access to a server object, but that only
+// gets created when `runServer` runs, so we declare `server` here
+// and then assign a value to it in run
+let server;
+
+// this function connects to our database, then starts the server
+function runServer(databaseUrl=DATABASE_URL, port=PORT) {
+  return new Promise((resolve, reject) => {
+    mongoose.connect(databaseUrl, err => {
+      if (err) {
+        return reject(err);
+      }
+      server = app.listen(port, () => {
+        console.log(`Your app is listening on port ${port}`);
+        resolve();
+      })
+      .on('error', err => {
+        mongoose.disconnect();
+        reject(err);
+      });
+    });
+  });
+}
+
+// this function closes the server, and returns a promise. we'll
+// use it in our integration tests later.
+function closeServer() {
+  return mongoose.disconnect().then(() => {
+     return new Promise((resolve, reject) => {
+       console.log('Closing server');
+       server.close(err => {
+           if (err) {
+               return reject(err);
+           }
+           resolve();
+       });
+     });
+  });
+}
+
 // SOCKET IO TESTING //
 
 const socketServer = require('http').createServer(socketApp);
-const websocket = require('socket.io').listen(3000);
+const websocket = require('socket.io').listen(server);
+console.log(websocket);
+
 var mongojs = require('mongojs');
 
 var ObjectID = mongojs.ObjectID;
@@ -30,9 +72,10 @@ var users = {};
 var chatId = 1;
 
 websocket.on('connection', (socket) => {
-    clients[socket.id] = socket;
-    socket.on('userJoined', (userId) => onUserJoined(userId, socket));
-    socket.on('message', (message) => onMessageReceived(message, socket));
+  console.log('you are connected');
+    // clients[socket.id] = socket;
+    // socket.on('userJoined', (userId) => onUserJoined(userId, socket));
+    // socket.on('message', (message) => onMessageReceived(message, socket));
 });
 
 // Event listeners.
@@ -249,46 +292,6 @@ app.delete('/api/users/:userEmail', passport.authenticate('basic', {session: fal
       }
     })
 })
-
-// closeServer needs access to a server object, but that only
-// gets created when `runServer` runs, so we declare `server` here
-// and then assign a value to it in run
-let server;
-
-// this function connects to our database, then starts the server
-function runServer(databaseUrl=DATABASE_URL, port=PORT) {
-  return new Promise((resolve, reject) => {
-    mongoose.connect(databaseUrl, err => {
-      if (err) {
-        return reject(err);
-      }
-      server = app.listen(port, () => {
-        console.log(`Your app is listening on port ${port}`);
-        resolve();
-      })
-      .on('error', err => {
-        mongoose.disconnect();
-        reject(err);
-      });
-    });
-  });
-}
-
-// this function closes the server, and returns a promise. we'll
-// use it in our integration tests later.
-function closeServer() {
-  return mongoose.disconnect().then(() => {
-     return new Promise((resolve, reject) => {
-       console.log('Closing server');
-       server.close(err => {
-           if (err) {
-               return reject(err);
-           }
-           resolve();
-       });
-     });
-  });
-}
 
 // if server.js is called directly (aka, with `node server.js`), this block
 // runs. but we also export the runServer command so other code (for instance, test code) can start the server as needed.
