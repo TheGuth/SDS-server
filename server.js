@@ -101,6 +101,7 @@ stdin.addListener('data', function(d) {
     createdAt: new Date(),
     user: { _id: 'robot' }
   }, null /* no socket */, true /* send from server */);
+
 });
 
 //////////////////////////////////////////////
