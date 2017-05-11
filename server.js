@@ -13,9 +13,9 @@ const app = express();
 const socketApp = express();
 
 // SOCKET IO TESTING //
-let server;
-const socketServer = require('http').createServer(socketApp);
-const websocket = require('socket.io').listen(server);
+
+
+const websocket = require('socket.io').listen(3000);
 
 var mongojs = require('mongojs');
 
@@ -31,7 +31,7 @@ var users = {};
 var chatId = 1;
 
 websocket.on('connection', (socket) => {
-    console.log('user connected', socket.id);
+    console.log('user connected');
     clients[socket.id] = socket;
     socket.on('userJoined', (userId) => onUserJoined(userId, socket));
     socket.on('message', (message) => onMessageReceived(message, socket));
@@ -255,7 +255,7 @@ app.delete('/api/users/:userEmail', passport.authenticate('basic', {session: fal
 // closeServer needs access to a server object, but that only
 // gets created when `runServer` runs, so we declare `server` here
 // and then assign a value to it in run
-// let server;
+let server;
 
 // this function connects to our database, then starts the server
 function runServer(databaseUrl=DATABASE_URL, port=PORT) {
