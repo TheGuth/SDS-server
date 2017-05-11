@@ -14,7 +14,8 @@
     "mongoose": "^4.7.1",
     "morgan": "^1.7.0",
     "passport": "^0.3.2",
-    "passport-http": "^0.3.0"
+    "passport-http": "^0.3.0",
+    "socket.io": "^2.0.1"
   },
   "keywords": [
     "node",

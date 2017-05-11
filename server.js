@@ -10,6 +10,21 @@ const {DATABASE_URL, PORT} = require('./config');
 const User = require('./models');
 
 const app = express();
+const socketApp = express();
+
+// SOCKET IO TESTING //
+
+const socketServer = require('http').createServer(socketApp);
+const io = require('socket.io').listen(3000);
+
+io.sockets.on('connection', function (socket) {
+  console.log('client connected', socket.id);
+    setInterval(function() {
+      socket.emit('hi', 'hello from server');
+    }, 2000);
+});
+
+// ////////////////////////////////////////////
 
 app.use(morgan('common'));
 app.use(bodyParser.json());
