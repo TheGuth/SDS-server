@@ -38,6 +38,7 @@ websocket.on('connection', (socket) => {
 // Event listeners.
 // When a user joins the chatroom.
 function onUserJoined(userId, socket) {
+  console.log('User Joined');
   try {
     // The userId is null for new users.
     if (!userId) {
@@ -57,6 +58,7 @@ function onUserJoined(userId, socket) {
 
 // When a user sends a message in the chatroom.
 function onMessageReceived(message, senderSocket) {
+  console.log('User Message Received');
   var userId = users[senderSocket.id];
   // Safety check.
   if (!userId) return;
@@ -67,6 +69,7 @@ function onMessageReceived(message, senderSocket) {
 // Helper functions.
 // Send the pre-existing messages to the user that just joined.
 function _sendExistingMessages(socket) {
+  console.log('Send Existing Messages');
   var messages = db.collection('messages')
     .find({ chatId })
     .sort({ createdAt: 1 })
@@ -79,6 +82,7 @@ function _sendExistingMessages(socket) {
 
 // Save the message to the db and send all sockets but the sender.
 function _sendAndSaveMessage(message, socket, fromServer) {
+  console.log('Send and Save Message');
   var messageData = {
     text: message.text,
     user: message.user,
