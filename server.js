@@ -6,7 +6,7 @@ const {BasicStrategy} = require('passport-http');
 const passport = require('passport');
 const bcrypt = require('bcryptjs');
 
-const {DATABASE_URL, PORT} = require('./config');
+const {DATABASE_URL, PORT, PORT2} = require('./config');
 const User = require('./models');
 
 const app = express();
@@ -15,7 +15,8 @@ const socketApp = express();
 // SOCKET IO TESTING //
 
 
-const websocket = require('socket.io').listen(3000);
+const websocket = require('socket.io').listen(PORT2);
+console.log(websocket);
 
 var mongojs = require('mongojs');
 
