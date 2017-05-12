@@ -11,6 +11,7 @@
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.15.2",
     "express": "^4.12.4",
+    "http-proxy-middleware": "^0.17.4",
     "mongojs": "^2.4.0",
     "mongoose": "^4.7.1",
     "morgan": "^1.7.0",

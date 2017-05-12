@@ -5,18 +5,26 @@ const morgan = require('morgan');
 const {BasicStrategy} = require('passport-http');
 const passport = require('passport');
 const bcrypt = require('bcryptjs');
+const proxy = require('http-proxy-middleware');
 
 const {DATABASE_URL, PORT, PORT2} = require('./config');
 const User = require('./models');
 
 const app = express();
+
+// app.use(proxy('http://localhost:8080', {
+//   logLevel: 'warn',
+//   ws: true,
+//   router: {
+//     'localhost:3000': 'http://localhost:8080'
+//   }
+// }));
 const socketApp = express();
 
 // SOCKET IO TESTING //
 
-
-const websocket = require('socket.io').listen(PORT2);
-console.log(websocket);
+const socketIO = require('socket.io');
+// const websocket = require('socket.io').listen(3000);
 
 var mongojs = require('mongojs');
 
@@ -31,12 +39,7 @@ var users = {};
 // For this example purpose, there is only one chatroom;
 var chatId = 1;
 
-websocket.on('connection', (socket) => {
-    console.log('user connected');
-    clients[socket.id] = socket;
-    socket.on('userJoined', (userId) => onUserJoined(userId, socket));
-    socket.on('message', (message) => onMessageReceived(message, socket));
-});
+
 
 // Event listeners.
 // When a user joins the chatroom.
@@ -257,6 +260,9 @@ app.delete('/api/users/:userEmail', passport.authenticate('basic', {session: fal
 // gets created when `runServer` runs, so we declare `server` here
 // and then assign a value to it in run
 let server;
+let websocket;
+let connected = false;
+
 
 // this function connects to our database, then starts the server
 function runServer(databaseUrl=DATABASE_URL, port=PORT) {
@@ -273,7 +279,18 @@ function runServer(databaseUrl=DATABASE_URL, port=PORT) {
         mongoose.disconnect();
         reject(err);
       });
-    });
+    })
+    .then(() => {
+      websocket = socketIO(server)
+      // console.log(websocket);
+      connected = true
+      websocket.on('connection', (socket) => {
+          console.log('user connected');
+          clients[socket.id] = socket;
+          socket.on('userJoined', (userId) => onUserJoined(userId, socket));
+          socket.on('message', (message) => onMessageReceived(message, socket));
+      });
+    })
   });
 }
 

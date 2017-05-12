@@ -5,4 +5,3 @@ exports.TEST_DATABASE_URL = (
 	process.env.TEST_DATABASE_URL ||
 	'mongodb://localhost/test-SDS-server');
 exports.PORT = process.env.PORT || 8080;
-exports.PORT2 = process.env.PORT2 || 3000;
