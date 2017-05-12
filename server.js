@@ -262,6 +262,7 @@ app.delete('/api/users/:userEmail', passport.authenticate('basic', {session: fal
 // and then assign a value to it in run
 let server;
 let websocket;
+let connected = false;
 
 
 // this function connects to our database, then starts the server
@@ -280,23 +281,19 @@ function runServer(databaseUrl=DATABASE_URL, port=PORT) {
         reject(err);
       });
     })
-    .then(server => {
-      websocket = socketIO(server);
-      console.log('runServer', websocket);
-
+    .then(() => {
+      websocket = socketIO(server)
+      // console.log(websocket);
+      connected = true
+      websocket.on('connection', (socket) => {
+          console.log('user connected');
+          clients[socket.id] = socket;
+          socket.on('userJoined', (userId) => onUserJoined(userId, socket));
+          socket.on('message', (message) => onMessageReceived(message, socket));
+      });
     })
   });
 }
-
-websocket = socketIO(server);
-
-
-websocket.on('connection', (socket) => {
-    console.log('user connected');
-    clients[socket.id] = socket;
-    socket.on('userJoined', (userId) => onUserJoined(userId, socket));
-    socket.on('message', (message) => onMessageReceived(message, socket));
-});
 
 // this function closes the server, and returns a promise. we'll
 // use it in our integration tests later.
