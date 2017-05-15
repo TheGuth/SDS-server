@@ -7,12 +7,14 @@ const userSchema = mongoose.Schema({
   name: {type: String, required: true},
   email: {type: String, required: true},
   password: {type: String, required: true},
+  friendsList: {type: Array, default: []}
 });
 
 userSchema.methods.apiRepr = function() {
   return {
     name: this.name,
     email: this.email,
+    friendsList: this.friendsList,
     id: this._id,
   };
 };

@@ -8,23 +8,17 @@ const bcrypt = require('bcryptjs');
 const proxy = require('http-proxy-middleware');
 
 const {DATABASE_URL, PORT, PORT2} = require('./config');
-const User = require('./models');
+const User = require('./models/user-model');
 
 const app = express();
 
-// app.use(proxy('http://localhost:8080', {
-//   logLevel: 'warn',
-//   ws: true,
-//   router: {
-//     'localhost:3000': 'http://localhost:8080'
-//   }
-// }));
 const socketApp = express();
-
-// SOCKET IO TESTING //
-
 const socketIO = require('socket.io');
-// const websocket = require('socket.io').listen(3000);
+
+// Routes
+const friends = require('./routes/friends');
+
+friends(app);
 
 var mongojs = require('mongojs');
 
