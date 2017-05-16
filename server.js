@@ -6,11 +6,55 @@ const {BasicStrategy} = require('passport-http');
 const passport = require('passport');
 const bcrypt = require('bcryptjs');
 const proxy = require('http-proxy-middleware');
+const Expo = require('exponent-server-sdk');
 
 const { DATABASE_URL, PORT } = require('./config');
 const User = require('./models/user-model');
 
+mongoose.Promise = global.Promise;
+
 const app = express();
+
+// To check if something is a push token
+//let isPushToken = Expo.isExponentPushToken(somePushToken);
+
+// Create a new Expo SDK client
+let expo = new Expo();
+
+//This function is the ES5 result of running ES6 await code through Babel...
+function _asyncToGenerator(fn) {
+  return function () { var gen = fn.apply(this, arguments);
+    return new Promise(function (resolve, reject) {
+      function step(key, arg) {
+        try { var info = gen[key](arg); var value = info.value; }
+        catch (error) { reject(error); return; }
+        if (info.done) { resolve(value); }
+        else {
+          return Promise.resolve(value)
+          .then(function (value) { step("next", value); }, function (err) { step("throw", err); });
+        }
+      }
+      return step("next");
+    });
+  };
+}
+
+//This is the send notification function with a hardcoded token
+_asyncToGenerator(function* () {
+  try {
+    let receipts = yield expo.sendPushNotificationsAsync([{
+      // The push token for the app user to whom you want to send the notification
+      to: 'ExponentPushToken[MQWAdWFMGCf9SFCY9PjOeK]',
+      sound: 'default',
+      body: 'This is a test notification',
+      data: { withSome: 'data' }
+    }]);
+    console.log(receipts);
+  } catch (error) {
+    console.error(error);
+  }
+})();
+
 
 const socketApp = express();
 const socketIO = require('socket.io');
