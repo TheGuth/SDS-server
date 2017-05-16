@@ -7,7 +7,8 @@ const userSchema = mongoose.Schema({
   name: {type: String, required: true},
   email: {type: String, required: true},
   password: {type: String, required: true},
-  friendsList: {type: Array, default: []}
+  friendsList: {type: Array, default: []},
+  deviceToken: {type: String, default: ''},
 });
 
 userSchema.methods.apiRepr = function() {
@@ -16,6 +17,7 @@ userSchema.methods.apiRepr = function() {
     email: this.email,
     friendsList: this.friendsList,
     id: this._id,
+    deviceToken: this.deviceToken,
   };
 };
 

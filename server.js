@@ -7,7 +7,7 @@ const passport = require('passport');
 const bcrypt = require('bcryptjs');
 const proxy = require('http-proxy-middleware');
 
-const {DATABASE_URL, PORT, PORT2} = require('./config');
+const { DATABASE_URL, PORT } = require('./config');
 const User = require('./models/user-model');
 
 const app = express();
@@ -170,6 +170,7 @@ app.get('/api/users', (req, res) => {
 })
 
 app.post('/api/users', (req, res) => {
+  console.log("hit /api/users POST backend");
   if (!req.body) {
     return res.status(400).json({message: 'No request body'});
   }
@@ -178,7 +179,8 @@ app.post('/api/users', (req, res) => {
     return res.status(422).json({message: 'Missing field: name'});
   }
 
-  let {email, password, name} = req.body;
+  let {email, password, name, token} = req.body;
+  console.log("got token: ", token);
 
   email = email.trim().toLowerCase();
   name = name.trim();
@@ -219,14 +221,17 @@ app.post('/api/users', (req, res) => {
       return User.hashPassword(password);
     })
     .then(hash => {
+      console.log("creating user...");
       return User
         .create({
           name: name,
           password: hash,
           email: email,
+          deviceToken: token,
         })
     })
     .then(user => {
+      console.log("created user: ", user);
       return res.status(201).json(user.apiRepr());
     })
     .catch(err => {
