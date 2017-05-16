@@ -32,6 +32,7 @@ module.exports = function(app) {
     })
   });
 
+  // should be a put...
   app.delete('/api/:id/friends/:friend_id', (req, res) => {
     User
     .findById(req.params.id)
@@ -44,7 +45,7 @@ module.exports = function(app) {
       return User.findByIdAndUpdate(
         req.params.id,
         { $set: { friendsList: newFriendList }},
-        {new: true}
+        { new: true }
       )
     })
     .then(user => {

@@ -12,12 +12,19 @@ const User = require('./models/user-model');
 
 const app = express();
 
+app.use(morgan('common'));
+app.use(bodyParser.json());
+
+mongoose.Promise = global.Promise;
+
 const socketApp = express();
 const socketIO = require('socket.io');
 
 // Routes
 const friends = require('./routes/friends');
+const rooms = require('./routes/room');
 
+rooms(app);
 friends(app);
 
 var mongojs = require('mongojs');
@@ -33,7 +40,7 @@ var users = {};
 // For this example purpose, there is only one chatroom;
 var chatId = 1;
 
-
+// new room increment chatId
 
 // Event listeners.
 // When a user joins the chatroom.
@@ -110,11 +117,6 @@ stdin.addListener('data', function(d) {
 
 //////////////////////////////////////////////
 
-app.use(morgan('common'));
-app.use(bodyParser.json());
-
-mongoose.Promise = global.Promise;
-
 const basicStrategy = new BasicStrategy(
   (email, password, callback) => {
     let user;
@@ -140,10 +142,6 @@ const basicStrategy = new BasicStrategy(
 
 passport.use(basicStrategy);
 app.use(passport.initialize());
-
-
-
-
 
 app.get('/api/users/:userEmail', passport.authenticate('basic', {session: false}), (req, res) => {
   userEmail = req.params.userEmail.toLowerCase();
