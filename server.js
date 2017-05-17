@@ -258,8 +258,6 @@ app.delete('/api/users/:userEmail', passport.authenticate('basic', {session: fal
 // and then assign a value to it in run
 let server;
 let websocket;
-let connected = false;
-
 
 // this function connects to our database, then starts the server
 function runServer(databaseUrl=DATABASE_URL, port=PORT) {
@@ -279,11 +277,30 @@ function runServer(databaseUrl=DATABASE_URL, port=PORT) {
     })
     .then(() => {
       websocket = socketIO(server)
-      // console.log(websocket);
-      connected = true
+
       websocket.on('connection', (socket) => {
           console.log('user connected');
           clients[socket.id] = socket;
+          // Client Side to emit to specific room?
+          // io.emit('room', {room_name : 'test'});
+
+          // Server Side to join specific room?
+          // socket.on('room', function(data){
+          //   socket.join(data.room_name)
+          // })
+
+
+          // Client side emit in specific room only
+          // io.sockets.in(room).emit('event', data);
+
+          // Client side creating a room
+          // var socket = io.connect();
+          // socket.emit('create', 'room1');
+
+          // Creating a specific room and joining it
+          // socket.on('create', function (room) {
+          //   socket.join(room);
+          // })
           socket.on('userJoined', (userId) => onUserJoined(userId, socket));
           socket.on('message', (message) => onMessageReceived(message, socket));
       });
