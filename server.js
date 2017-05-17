@@ -18,8 +18,6 @@ const app = express();
 app.use(morgan('common'));
 app.use(bodyParser.json());
 
-mongoose.Promise = global.Promise;
-
 const socketApp = express();
 const socketIO = require('socket.io');
 
