@@ -13,6 +13,7 @@ module.exports = function(app) {
     })
   });
 
+  // add friend to user
   app.post('/api/:id/friends/:friend_id', (req, res) => {
     User
     .findById(req.params.friend_id)
@@ -33,6 +34,7 @@ module.exports = function(app) {
   });
 
   // should be a put...
+  // remove friend from user
   app.delete('/api/:id/friends/:friend_id', (req, res) => {
     User
     .findById(req.params.id)
