@@ -38,44 +38,45 @@ var users = {};
 
 // This represents a unique chatroom.
 // For this example purpose, there is only one chatroom;
-var chatId = 1;
+// var chatId = 1;
 
 // new room increment chatId
 
 // Event listeners.
 // When a user joins the chatroom.
-function onUserJoined(userId, socket) {
+function onUserJoined(userId, chatId, socket) {
   console.log('User Joined');
+  console.log(chatId);
   try {
     // The userId is null for new users.
     if (!userId) {
       var user = db.collection('users').insert({}, (err, user) => {
         socket.emit('userJoined', user._id);
         users[socket.id] = user._id;
-        _sendExistingMessages(socket);
+        _sendExistingMessages(socket, chatId);
       });
     } else {
       users[socket.id] = userId;
-      _sendExistingMessages(socket);
+      _sendExistingMessages(socket, chatId);
     }
   } catch(err) {
-    console.err(err);
+    console.error(err);
   }
 }
 
 // When a user sends a message in the chatroom.
-function onMessageReceived(message, senderSocket) {
+function onMessageReceived(message, chatId, senderSocket) {
   console.log('User Message Received');
   var userId = users[senderSocket.id];
   // Safety check.
   if (!userId) return;
 
-  _sendAndSaveMessage(message, senderSocket);
+  _sendAndSaveMessage(message, chatId, senderSocket);
 }
 
 // Helper functions.
 // Send the pre-existing messages to the user that just joined.
-function _sendExistingMessages(socket) {
+function _sendExistingMessages(socket, chatId) {
   console.log('Send Existing Messages');
   var messages = db.collection('messages')
     .find({ chatId })
@@ -88,7 +89,7 @@ function _sendExistingMessages(socket) {
 }
 
 // Save the message to the db and send all sockets but the sender.
-function _sendAndSaveMessage(message, socket, fromServer) {
+function _sendAndSaveMessage(message, chatId, socket, fromServer) {
   console.log('Send and Save Message');
   var messageData = {
     text: message.text,
@@ -276,9 +277,9 @@ function runServer(databaseUrl=DATABASE_URL, port=PORT) {
       });
     })
     .then(() => {
-      websocket = socketIO(server)
+      websocket = socketIO(server);
 
-      websocket.on('connection', (socket) => {
+      websocket.on('connection', (socket, chatId) => {
           console.log('user connected');
           clients[socket.id] = socket;
           // Client Side to emit to specific room?
@@ -288,7 +289,6 @@ function runServer(databaseUrl=DATABASE_URL, port=PORT) {
           // socket.on('room', function(data){
           //   socket.join(data.room_name)
           // })
-
 
           // Client side emit in specific room only
           // io.sockets.in(room).emit('event', data);
@@ -301,8 +301,10 @@ function runServer(databaseUrl=DATABASE_URL, port=PORT) {
           // socket.on('create', function (room) {
           //   socket.join(room);
           // })
-          socket.on('userJoined', (userId) => onUserJoined(userId, socket));
-          socket.on('message', (message) => onMessageReceived(message, socket));
+          console.log(chatId);
+          // var chatId = 1;
+          socket.on('userJoined', (userId, chatId) => onUserJoined(userId, chatId, socket));
+          socket.on('message', (message, chatId) => onMessageReceived(message, chatId, socket));
       });
     })
   });
