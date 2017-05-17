@@ -23,9 +23,11 @@ const socketIO = require('socket.io');
 // Routes
 const friends = require('./routes/friends');
 const rooms = require('./routes/room');
+const search = require('./routes/search');
 
 rooms(app);
 friends(app);
+search(app);
 
 var mongojs = require('mongojs');
 
