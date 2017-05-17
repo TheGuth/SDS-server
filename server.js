@@ -10,7 +10,6 @@ const Expo = require('exponent-server-sdk');
 
 const { DATABASE_URL, PORT } = require('./config');
 const User = require('./models/user-model');
-
 mongoose.Promise = global.Promise;
 
 const app = express();
