@@ -21,13 +21,13 @@ const app = express();
 // Create a new Expo SDK client
 let expo = new Expo();
 
-async function sendNotification(deviceId) {
+async function sendNotification(deviceId, message) {
   try {
     let receipts = await expo.sendPushNotificationsAsync([{
       // The push token for the app user to whom you want to send the notification
       to: deviceId,
       sound: 'default',
-      body: 'This is a test notification',
+      body: message,
       data: {withSome: 'data'},
     }]);
     console.log(receipts);
@@ -36,7 +36,8 @@ async function sendNotification(deviceId) {
   }
 };
 
-// sendNotification('ExponentPushToken[MQWAdWFMGCf9SFCY9PjOeK]');
+// Actually sending a notification...
+// sendNotification('ExponentPushToken[MQWAdWFMGCf9SFCY9PjOeK]', 'This is a test notification');
 
 const socketApp = express();
 const socketIO = require('socket.io');
