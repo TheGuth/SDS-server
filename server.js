@@ -15,30 +15,6 @@ mongoose.Promise = global.Promise;
 
 const app = express();
 
-// To check if something is a push token
-//let isPushToken = Expo.isExponentPushToken(somePushToken);
-
-// Create a new Expo SDK client
-let expo = new Expo();
-
-async function sendNotification(deviceId, message) {
-  try {
-    let receipts = await expo.sendPushNotificationsAsync([{
-      // The push token for the app user to whom you want to send the notification
-      to: deviceId,
-      sound: 'default',
-      body: message,
-      data: {withSome: 'data'},
-    }]);
-    console.log(receipts);
-  } catch (error) {
-    console.error(error);
-  }
-};
-
-// Actually sending a notification...
-// sendNotification('ExponentPushToken[MQWAdWFMGCf9SFCY9PjOeK]', 'This is a test notification');
-
 const socketApp = express();
 const socketIO = require('socket.io');
 
@@ -280,6 +256,31 @@ app.delete('/api/users/:userEmail', passport.authenticate('basic', {session: fal
         res.status(500).json({message: 'No user found'});
       }
     })
+})
+
+let expo = new Expo();
+
+async function sendNotification(deviceId, message) {
+  try {
+    let receipts = await expo.sendPushNotificationsAsync([{
+      // The push token for the app user to whom you want to send the notification
+      to: deviceId,
+      sound: 'default',
+      body: message,
+      data: {withSome: 'data'},
+    }]);
+    console.log(receipts);
+    return receipts;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+app.post('/api/notification', (req, res) => {
+  return sendNotification(req.body.deviceId, req.body.message)
+  .then(receipts => {
+    res.status(201).json({message: receipts});
+  })
 })
 
 // closeServer needs access to a server object, but that only
