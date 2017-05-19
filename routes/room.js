@@ -6,16 +6,25 @@ module.exports = function(app) {
   app.post('/api/:id/room', (req, res) => {
     let currentUserId = req.params.id
     User
-    .findById(currentUserId)
+    .find({_id: currentUserId})
     .then(user => {
-      return Room
-      .create({
-        users: [user],
-        messages: [],
-      });
+      if (user === null) {
+        return Room
+        .create({
+          roomName: req.body.roomName,
+          users: req.body.addedFriends,
+          messages: [],
+        });
+      } else {
+        return Room
+        .create({
+          roomName: req.body.roomName,
+          users: [user].concat(req.body.addedFriends),
+          messages: [],
+        });
+      }
     })
     .then(room => {
-      console.log(room);
       return User
       .findByIdAndUpdate(
         currentUserId,
