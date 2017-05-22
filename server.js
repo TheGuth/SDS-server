@@ -97,7 +97,7 @@ function _sendAndSaveMessage(message, chatId, socket, fromServer) {
     text: message.text,
     user: message.user,
     createdAt: new Date(message.createdAt),
-    chatId: chatId
+    chatId: chatId,
     image: message.image
   };
 
