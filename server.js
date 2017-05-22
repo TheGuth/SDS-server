@@ -91,13 +91,14 @@ function _sendExistingMessages(socket, chatId) {
 }
 
 // Save the message to the db and send all sockets but the sender.
-function _sendAndSaveMessage(message, chatId, socket, fromServer) {
+function _sendAndSaveMessage(message, chatId, image, socket, fromServer) {
   console.log('Send and Save Message');
   var messageData = {
     text: message.text,
     user: message.user,
     createdAt: new Date(message.createdAt),
-    chatId: chatId
+    chatId: chatId,
+    image: image,
   };
 
   db.collection('messages').insert(messageData, (err, message) => {
@@ -331,7 +332,7 @@ function runServer(databaseUrl=DATABASE_URL, port=PORT) {
           console.log(chatId);
           // var chatId = 1;
           socket.on('userJoined', (userId, chatId) => onUserJoined(userId, chatId, socket));
-          socket.on('message', (message, chatId) => onMessageReceived(message, chatId, socket));
+          socket.on('message', (message, chatId, image) => onMessageReceived(message, chatId, socket));
       });
     })
   });
