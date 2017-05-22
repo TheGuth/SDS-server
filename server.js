@@ -98,6 +98,7 @@ function _sendAndSaveMessage(message, chatId, socket, fromServer) {
     user: message.user,
     createdAt: new Date(message.createdAt),
     chatId: chatId
+    image: message.image
   };
 
   db.collection('messages').insert(messageData, (err, message) => {
