@@ -25,7 +25,7 @@ module.exports = function(app) {
       }
     })
     .then(room => {
-      return User
+      return User // updating current User,
       .findByIdAndUpdate(
         currentUserId,
         { $push: {rooms: room }},
@@ -39,6 +39,37 @@ module.exports = function(app) {
       res.status(500).json({message: 'Internal Server Error'});
     })
   });
+
+  // users = { // user1, user2,
+  //   rooms: [{room1}, {room2}, {room3}]
+  // }
+  //
+  // room1 = {
+  //   id: asdfasdfa,
+  //   users: [{james}, {sim}]
+  // }
+
+  // // console.log(room)
+  // let artificialUser = [{
+  //   _id: req.params.id
+  // }]
+  // let addRoom = req.body.addedFriends.concat(artificialUser);
+  // const idArray = addRoom.map((user) => {
+  //   return user._id;
+  // })
+  // console.log(idArray);
+  // // console.log(addRoom);
+  // idArray.forEach((id) => {
+  //   console.log('I made it', id);
+  //   User.findOneAndUpdate(id, {$push: {rooms: room}});
+  // })
+  //   // return User
+  //   // .Update(
+  //   //   { _id: { "$in": idArray }},
+  //   //   { $push: {rooms: room }},
+  //   //   { multi: true }
+  //   // )
+  // return room;
 
   // grab all rooms
   app.get('/api/rooms', (req, res) => {
@@ -102,10 +133,14 @@ module.exports = function(app) {
   // add user to a specific room
   // and add room to the specified user
   app.post('/api/room/:id/add', (req, res) => {
+    console.log('hello');
+    console.log(req.params.id);
+    console.log(req.body.currentUserId);
     let currentUserId = req.body.currentUserId
     User
     .findById(currentUserId)
     .then(user => {
+      console.log(user);
       return Room
       .findByIdAndUpdate(
         req.params.id,
@@ -114,8 +149,7 @@ module.exports = function(app) {
       );
     })
     .then(updatedRoom => {
-      console.log(updatedRoom);
-      console.log(updatedRoom)
+      console.log('updated Room', updatedRoom);
       return User
       .findByIdAndUpdate(
         currentUserId,
