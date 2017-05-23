@@ -7,13 +7,11 @@ const passport = require('passport');
 const bcrypt = require('bcryptjs');
 const proxy = require('http-proxy-middleware');
 const Expo = require('exponent-server-sdk');
-
 const { DATABASE_URL, PORT } = require('./config');
 const User = require('./models/user-model');
 mongoose.Promise = global.Promise;
 
 const app = express();
-
 app.use(morgan('common'));
 app.use(bodyParser.json());
 
@@ -48,7 +46,6 @@ var users = {};
 // When a user joins the chatroom.
 function onUserJoined(userId, chatId, socket) {
   console.log('User Joined');
-  console.log(chatId);
   try {
     // The userId is null for new users.
     if (!userId) {
@@ -72,7 +69,6 @@ function onMessageReceived(message, chatId, senderSocket) {
   var userId = users[senderSocket.id];
   // Safety check.
   if (!userId) return;
-
   _sendAndSaveMessage(message, chatId, senderSocket);
 }
 
@@ -100,7 +96,6 @@ function _sendAndSaveMessage(message, chatId, socket, fromServer) {
     chatId: chatId,
     image: message.image
   };
-
   db.collection('messages').insert(messageData, (err, message) => {
     // If the message is from the server, then send to everyone.
     var emitter = fromServer ? websocket : socket.broadcast;
@@ -116,7 +111,6 @@ stdin.addListener('data', function(d) {
     createdAt: new Date(),
     user: { _id: 'robot' }
   }, null /* no socket */, true /* send from server */);
-
 });
 
 //////////////////////////////////////////////
@@ -163,16 +157,7 @@ app.get('/api/users/:userEmail', passport.authenticate('basic', {session: false}
     });
 })
 
-                  //TODO THIS IS ONLY FOR DEV USE; TAKE OUT FOR PRODUCTION
-app.get('/api/users', (req, res) => {
-  return User.find({})
-  .then(users => {
-    return res.status(200).json(users);
-  })
-})
-
 app.post('/api/users', (req, res) => {
-  console.log("hit /api/users POST backend");
   if (!req.body) {
     return res.status(400).json({message: 'No request body'});
   }
@@ -182,7 +167,6 @@ app.post('/api/users', (req, res) => {
   }
 
   let {email, password, name, token} = req.body;
-  console.log("got token: ", token);
 
   email = email.trim().toLowerCase();
   name = name.trim();
@@ -223,7 +207,6 @@ app.post('/api/users', (req, res) => {
       return User.hashPassword(password);
     })
     .then(hash => {
-      console.log("creating user...");
       return User
         .create({
           name: name,
@@ -233,7 +216,6 @@ app.post('/api/users', (req, res) => {
         })
     })
     .then(user => {
-      console.log("created user: ", user);
       return res.status(201).json(user.apiRepr());
     })
     .catch(err => {
@@ -268,7 +250,6 @@ async function sendNotification(deviceId, message) {
       body: message,
       data: {withSome: 'data'},
     }]);
-    console.log(receipts);
     return receipts;
   } catch (error) {
     console.error(error);
@@ -329,8 +310,6 @@ function runServer(databaseUrl=DATABASE_URL, port=PORT) {
           // socket.on('create', function (room) {
           //   socket.join(room);
           // })
-          console.log(chatId);
-          // var chatId = 1;
           socket.on('userJoined', (userId, chatId) => onUserJoined(userId, chatId, socket));
           socket.on('message', (message, chatId) => onMessageReceived(message, chatId, socket));
       });
