@@ -9,7 +9,8 @@ const userSchema = mongoose.Schema({
   password: {type: String, required: true},
   friendsList: {type: Array, default: []},
   deviceToken: {type: String, default: ''},
-  rooms: {type: Array, default: []} /// [room 1, room 2, room 3]
+  rooms: {type: Array, default: []}, /// [room 1, room 2, room 3]
+  resetPassLink: {type: String, default: ''},
 });
 
 userSchema.methods.apiRepr = function() {
@@ -19,7 +20,7 @@ userSchema.methods.apiRepr = function() {
     friendsList: this.friendsList,
     id: this._id,
     deviceToken: this.deviceToken,
-    rooms: this.rooms
+    rooms: this.rooms,
   };
 };
 
@@ -31,4 +32,4 @@ userSchema.statics.hashPassword = function(password) {
   return bcrypt.hash(password, 12);
 }
 
-module.exports = mongoose.model('User', userSchema)
+module.exports = mongoose.model('User', userSchema);

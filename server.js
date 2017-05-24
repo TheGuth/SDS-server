@@ -7,7 +7,8 @@ const passport = require('passport');
 const bcrypt = require('bcryptjs');
 const proxy = require('http-proxy-middleware');
 const Expo = require('exponent-server-sdk');
-const { DATABASE_URL, PORT } = require('./config');
+const { DATABASE_URL, PORT, APP_URL_BASE } = require('./config');
+const {sendEmail} = require('./emailer');
 const User = require('./models/user-model');
 mongoose.Promise = global.Promise;
 
@@ -262,6 +263,53 @@ app.post('/api/notification', (req, res) => {
     res.status(201).json({message: receipts});
   })
 })
+
+//--------------Password Reset Endpoints -------------------------------------->
+
+const randomString = length => {
+  let text = "";
+  const possible = "abcdefghijklmnopqrstuvwxyz0123456789_-.";
+  for(let i = 0; i < length; i++) {
+      text += possible.charAt(Math.floor(Math.random() * possible.length));
+  }
+  return text;
+}
+
+app.put('/api/forgotpass', (req, res) => {
+  if (!req.body) return res.status(400).json({message: 'No Request Body'});
+  if (!req.body.email) return res.status(400).json({message: 'No Email in Request Body'});
+
+  const token = randomString(40); //TODO THIS GENERATES A RANDOM, BUT NOT NECESSARILY UNIQUE STRING
+  const emailData = {
+    to: req.body.email,
+    subject: "Stop, Drop, and Selfie: Password Reset Instructions",
+    text: `Please use the following link for instructions to reset your password: ${APP_URL_BASE}/resetpass/${token}`,
+    html: `<p>Please use the link below for instructions to reset your password.</p><p>${APP_URL_BASE}/resetpass/${token}</p>`
+  };
+
+  return User
+  .update({ email: req.body.email }, { $set: { resetPassLink: token }}, function(error, feedback) {
+              //TODO Nothing currently in place to expire token after set time
+    if (error) return res.send(error);
+    else {
+      sendEmail(emailData);
+      return res.status(200).json({message: `Email has been sent to ${req.body.email}`});
+    }
+  })
+})
+
+app.put('/api/resetpass', (req, res) => {
+  const {resetPassLink, newPassword} = req.body;
+  User.hashPassword(newPassword)
+  .then(hashedPass => {
+    return User
+    .update({resetPassLink}, { $set: { password: hashedPass, resetPassLink: '' }}, function(error, feedback) {
+      if (error) return res.send(error);
+      return res.send(feedback);
+    })
+  })
+})
+
 
 // closeServer needs access to a server object, but that only
 // gets created when `runServer` runs, so we declare `server` here
