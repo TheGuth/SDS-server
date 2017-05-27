@@ -30,7 +30,7 @@ search(app);
 var mongojs = require('mongojs');
 
 var ObjectID = mongojs.ObjectID;
-var db = mongojs(process.env.MONGO_URL || 'mongodb://terry:terrypass@ds137749.mlab.com:37749/sds');
+var db = mongojs(DATABASE_URL);
 
 // Mapping objects to easily map sockets and users.
 var clients = {};
